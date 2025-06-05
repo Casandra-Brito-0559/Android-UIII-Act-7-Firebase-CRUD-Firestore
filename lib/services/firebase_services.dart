@@ -2,36 +2,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
 
-Future<List>getPeople() async {
-  List people=[];
-  CollectionReference collectionReferencePeople=db.collection("people");
-  QuerySnapshot queryPeople=await collectionReferencePeople.get();
-  for (var doc in queryPeople.docs) {
+Future<List> getLibros() async {
+  List libros = [];
+  CollectionReference collectionReferenceLibros = db.collection("Libros");
+  QuerySnapshot queryLibros = await collectionReferenceLibros.get();
+
+  for (var doc in queryLibros.docs) {
     final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    final person = {
-      "name": data["name"],
-       "uid": doc.id,
+    final libro = {
+      "uid": doc.id,
+      "titulo": data["titulo"],
+      "autor": data["autor"],
+      "genero": data["genero"],
+      "fechapubli": data["fechapubli"],
+      "precio": data["precio"],
+      "cantidad": data["cantidad"],
     };
-    people.add(person);
-
-
+    libros.add(libro);
   }
 
-  await Future.delayed(const Duration(seconds: 5),);
-  return people;
-}
-//Guardar en la base de datos
-Future<void> addPeople(String name) async {
-await db.collection("people").add({"name":name});
+  return libros;
 }
 
-
-//Actualizar en la base de datos
-Future<void> updatePeople(String uid,String newName) async {
-await db.collection("people").doc(uid).update({"name":newName});
+Future<void> addLibro(Map<String, dynamic> libro) async {
+  await db.collection("Libros").add(libro);
 }
 
-//Eliminar en la base de datos
-Future<void> deletePeople(String uid) async {
-await db.collection("people").doc(uid).delete();
+Future<void> updateLibro(String uid, Map<String, dynamic> libro) async {
+  await db.collection("Libros").doc(uid).update(libro);
+}
+
+Future<void> deleteLibro(String uid) async {
+  await db.collection("Libros").doc(uid).delete();
 }

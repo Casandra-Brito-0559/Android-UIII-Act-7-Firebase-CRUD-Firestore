@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/services/firebase_services.dart';
+import '../services/firebase_services.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,74 +14,113 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "My CRUD CAss",
-          style: TextStyle(color: Colors.white),
+          "Libros",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        backgroundColor: Colors.pinkAccent,
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 227, 129, 245),
+        elevation: 4,
       ),
       body: FutureBuilder(
-        future: getPeople(),
+        future: getLibros(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
+              padding: const EdgeInsets.all(12),
               itemCount: snapshot.data?.length,
               itemBuilder: (context, index) {
+                final libro = snapshot.data?[index];
                 return Dismissible(
-                  onDismissed: (direction) async {
-                    await deletePeople(snapshot.data?[index]["uid"]);
-                    snapshot.data?.removeAt(index);
-                  },
+                  key: Key(libro["uid"]),
+                  direction: DismissDirection.endToStart,
                   confirmDismiss: (direction) async {
-                    bool result = false;
-                    result = await showDialog(
+                    // Confirmación antes de eliminar
+                    return await showDialog<bool>(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          title: Text(
-                            "¿Estas seguro de eliminar a ${snapshot.data?[index]["name"]}?",
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: Text("¿Eliminar \"${libro["titulo"]}\"?"),
+                          content: const Text(
+                            "Esta acción no se puede deshacer.",
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () {
-                                return Navigator.pop(context, false);
-                              },
+                              onPressed: () => Navigator.of(context).pop(false),
                               child: const Text(
                                 "Cancelar",
                                 style: TextStyle(color: Colors.red),
                               ),
                             ),
                             TextButton(
-                              onPressed: () {
-                                return Navigator.pop(context, true);
-                              },
-                              child: const Text("Si estoy seguro"),
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("Sí, eliminar"),
                             ),
                           ],
                         );
                       },
+                    ) ?? false; // Por si el usuario cierra el diálogo
+                  },
+                  onDismissed: (_) async {
+                    await deleteLibro(libro["uid"]);
+                    setState(() {});
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Libro \"${libro["titulo"]}\" eliminado."),
+                        backgroundColor: Colors.redAccent,
+                      ),
                     );
-                    return result;
                   },
                   background: Container(
-                    color: Colors.red,
-                    child: const Icon(Icons.delete),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  direction: DismissDirection.endToStart,
-                  key: Key(snapshot.data?[index]["uid"]),
-                  child: ListTile(
-                    title: Text(snapshot.data?[index]["name"]),
-                    onTap: (() async {
-                      await Navigator.pushNamed(
-                        context,
-                        '/edit',
-                        arguments: {
-                          "name": snapshot.data?[index]["name"],
-                          "uid": snapshot.data?[index]["uid"],
-                        },
-                      );
-                      setState(() {});
-                    }),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      title: Text(
+                        libro["titulo"],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "${libro["autor"]} • ${libro["genero"]}",
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      onTap: () async {
+                        await Navigator.pushNamed(
+                          context,
+                          '/edit',
+                          arguments: libro,
+                        );
+                        setState(() {});
+                      },
+                    ),
                   ),
                 );
               },
@@ -96,7 +135,9 @@ class _HomeState extends State<Home> {
           await Navigator.pushNamed(context, '/add');
           setState(() {});
         },
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.pinkAccent,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Agregar nuevo libro',
       ),
     );
   }

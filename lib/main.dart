@@ -1,13 +1,12 @@
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/pages/add_name_page.dart';
-import 'package:myapp/pages/edit_name_page.dart';
-import 'package:myapp/pages/home_page.dart';
-// importaciones de firebase
+import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'pages/home_page.dart';
+import 'pages/add_libro_page.dart';
+import 'pages/edit_libro_page.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -22,16 +21,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "Mi CRUD",
       initialRoute: '/',
       routes: {
-        '/' :(context) => const Home(),
-        '/add' :(context) => const AddNamePage(),
-        '/edit' :(context) => const EditNamePage(),
-        },
-        
-      
+        '/': (context) => const Home(),
+        '/add': (context) => const AddLibroPage(),
+        '/edit': (context) => const EditLibroPage(),
+      },
     );
   }
 }
+
 
